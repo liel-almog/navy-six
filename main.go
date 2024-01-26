@@ -16,6 +16,8 @@ func main() {
 	initMenu()
 	printMenu()
 
+	initMissles()
+
 	for {
 		var choice int
 
