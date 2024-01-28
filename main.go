@@ -1,33 +1,55 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
-func printMenu() {
-	fmt.Println("Please select an option:")
+func cleanScreen() {
+	fmt.Print("\033[H\033[2J")
+}
 
-	for i := 1; i <= len(menu); i++ {
-		fmt.Printf("%d. %s\n", i, menu[i].name)
+func readIntFromConsole(reader *bufio.Reader) (int, error) {
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return 0, err
 	}
+
+	// Trim the newline character from the input
+	input = strings.TrimSpace(input)
+
+	// Parse the string into an integer
+	number, err := strconv.Atoi(input)
+	if err != nil {
+		return 0, err
+	}
+	fmt.Println()
+
+	return number, nil
 }
 
 func main() {
-	initMenu()
-	printMenu()
+	reader := bufio.NewReader(os.Stdin)
 
-	initMissles()
+	cleanScreen()
+
+	printMenu()
+	initLaunchers()
 
 	for {
-		var choice int
+		fmt.Print("Enter your choice: ")
+		choice, _ := readIntFromConsole(reader)
 
-		fmt.Scanln(&choice)
-
-		if item, exists := menu[choice]; exists {
+		if item, ok := menu[menuOption(choice)]; ok {
+			cleanScreen()
+			fmt.Printf("You selected: %s\n", item.name)
 			item.action()
 		} else {
-			// Clear the screen
-			fmt.Print("\033[H\033[2J")
+			cleanScreen()
+			fmt.Println("Invalid choice")
 			printMenu()
 		}
 	}
