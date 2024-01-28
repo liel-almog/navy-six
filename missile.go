@@ -1,13 +1,28 @@
 package main
 
-type launcher string
+type launcher int
 
 const (
-	torpedoLauncher    launcher = "Torpedo"
-	ballisticLauncher  launcher = "Balistic"
-	cruiseLauncher     launcher = "Cruise"
-	hypersonicLauncher launcher = "Hypersonic"
+	torpedoLauncher launcher = iota + 1
+	ballisticLauncher
+	cruiseLauncher
+	hypersonicLauncher
 )
+
+func (l launcher) String() string {
+	switch l {
+	case torpedoLauncher:
+		return "Torpedo"
+	case ballisticLauncher:
+		return "Ballistic"
+	case cruiseLauncher:
+		return "Cruise"
+	case hypersonicLauncher:
+		return "Hypersonic"
+	default:
+		return "Unknown"
+	}
+}
 
 type missileLauncher interface {
 	launch()
@@ -26,7 +41,9 @@ type missileStorage struct {
 
 func (m *missileStorage) addMissiles(count int) {
 	for i := 0; i < count; i++ {
-		m.missiles = append(m.missiles, missile{})
+		m.missiles = append(m.missiles, missile{
+			failed: false,
+		})
 	}
 }
 

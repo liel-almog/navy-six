@@ -20,37 +20,47 @@ type menuItem struct {
 	action func()
 }
 
+func storeNewMissiles() {
+
+}
+
+func launchMissile() {
+	fmt.Println("Launch missile")
+}
+
+func inventoryReport() {
+	fmt.Println("Inventory report")
+}
+
+func cleanOutMissiles() {
+	fmt.Println("Clean out missiles")
+}
+
+func shutdown() {
+	fmt.Println("GG WP, exiting.....")
+	os.Exit(0)
+}
+
 var menu map[menuOption]menuItem = map[menuOption]menuItem{
 	menuStoreNewMissles: {
-		name: "Store new missiles",
-		action: func() {
-			println("Storing new missiles")
-		},
+		name:   "Store new missiles",
+		action: storeNewMissiles,
 	},
 	menuLaunchMissle: {
-		name: "Launch missile",
-		action: func() {
-			println("Launching missile")
-		},
+		name:   "Launch missile",
+		action: launchMissile,
 	},
 	menuInventoryReport: {
-		name: "Inventory report",
-		action: func() {
-			println("Inventory report")
-		},
+		name:   "Inventory report",
+		action: inventoryReport,
 	},
 	menuCleanOutMissles: {
-		name: "Clean out missiles",
-		action: func() {
-			println("Cleaning out missiles")
-		},
+		name:   "Clean out missiles",
+		action: cleanOutMissiles,
 	},
 	menuShutdown: {
-		name: "Shutdown",
-		action: func() {
-			fmt.Println("GG WP, exiting.....")
-			os.Exit(0)
-		},
+		name:   "Shutdown",
+		action: shutdown,
 	},
 }
 

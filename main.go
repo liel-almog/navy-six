@@ -5,6 +5,8 @@ import (
 )
 
 func main() {
+	fmt.Println("Welcome to the missile launcher system")
+
 	printMenu()
 	initLaunchers()
 
