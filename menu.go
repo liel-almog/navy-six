@@ -24,45 +24,55 @@ type menuItem struct {
 func storeNewMissiles() {
 	reader := bufio.NewReader(os.Stdin)
 
-	printMissilesLaunchers()
+	launcherType, missileLauncher := selectMissleLauncher()
 	for {
-		fmt.Print("To which launcher you want to add missiles: ")
-		number, _ := readIntFromConsole(reader)
-		launcherType := launcher(number)
+		fmt.Println("How many missiles you want to add to", launcherType, "Launcher")
+		fmt.Print("Enter number of missiles: ")
+		missilesCount, err := readIntFromConsole(reader)
 
-		if _, ok := launchers[launcherType]; ok {
-			for {
-				fmt.Println("How many missiles you want to add to", launcherType, "Launcher")
-				fmt.Print("Enter number of missiles: ")
-				missilesCount, err := readIntFromConsole(reader)
-
-				if err != nil {
-					fmt.Println("Invalid input, please try again")
-					continue
-				}
-
-				if missilesCount < 0 {
-					fmt.Println("Please enter a positive number")
-					continue
-				}
-
-				launchers[launcherType].addMissiles(missilesCount)
-				fmt.Printf("Added %d missiles to %s launcher\n", missilesCount, launcherType)
-				break
-			}
-
-			break
-		} else {
-			cleanScreen()
-			fmt.Println("Please select again")
-			printMissilesLaunchers()
+		if err != nil {
+			fmt.Println("Invalid input, please try again")
+			continue
 		}
-	}
 
+		if missilesCount < 0 {
+			fmt.Println("Please enter a positive number")
+			continue
+		}
+
+		missileLauncher.add(missilesCount)
+		fmt.Printf("Added %d missiles to %s launcher\n", missilesCount, launcherType)
+		break
+	}
 }
 
 func launchMissile() {
-	fmt.Println("Launch missile")
+	reader := bufio.NewReader(os.Stdin)
+	launcherType, missleLauncher := selectMissleLauncher()
+
+	for {
+		fmt.Println("How many missiles you want to launch from", launcherType, "Launcher")
+		fmt.Print("Enter number of missiles: ")
+		missilesCount, err := readIntFromConsole(reader)
+
+		if err != nil {
+			fmt.Println("Invalid input, please try again")
+			continue
+		}
+
+		if missilesCount < 0 {
+			fmt.Println("Please enter a positive number")
+			continue
+		}
+
+		if missilesCount > missleLauncher.len() {
+			missleLauncher.add(missilesCount)
+		}
+
+		successfulLaunches := missleLauncher.launch(missilesCount)
+		fmt.Printf("Launched %d missiles successfully from %s launcher\n", successfulLaunches, launcherType)
+		break
+	}
 }
 
 func inventoryReport() {

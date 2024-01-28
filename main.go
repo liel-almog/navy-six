@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
 	"strings"
@@ -31,9 +32,12 @@ func readIntFromConsole(reader *bufio.Reader) (int, error) {
 	return number, nil
 }
 
+func random(min int, max int) int {
+	return rand.Intn(max-min) + min
+}
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-
 	cleanScreen()
 
 	printMenu()
