@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"slices"
+)
+
 type launcher int
 
 const (
@@ -111,5 +116,20 @@ var launchers = map[launcher]missileLauncher{
 func initLaunchers() {
 	for _, l := range launchers {
 		l.addMissiles(10)
+	}
+}
+
+func printMissilesLaunchers() {
+	var launcherTypes []launcher
+
+	for key := range launchers {
+		launcherTypes = append(launcherTypes, key)
+	}
+
+	// sort the launchers
+	slices.Sort(launcherTypes)
+
+	for i := 0; i < len(launcherTypes); i++ {
+		fmt.Printf("%d. %s\n", i+1, launcherTypes[i])
 	}
 }
