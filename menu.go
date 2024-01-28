@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 )
@@ -21,6 +22,42 @@ type menuItem struct {
 }
 
 func storeNewMissiles() {
+	reader := bufio.NewReader(os.Stdin)
+
+	printMissilesLaunchers()
+	for {
+		fmt.Print("To which launcher you want to add missiles: ")
+		number, _ := readIntFromConsole(reader)
+		launcherType := launcher(number)
+
+		if _, ok := launchers[launcherType]; ok {
+			for {
+				fmt.Println("How many missiles you want to add to", launcherType, "Launcher")
+				fmt.Print("Enter number of missiles: ")
+				missilesCount, err := readIntFromConsole(reader)
+
+				if err != nil {
+					fmt.Println("Invalid input, please try again")
+					continue
+				}
+
+				if missilesCount < 0 {
+					fmt.Println("Please enter a positive number")
+					continue
+				}
+
+				launchers[launcherType].addMissiles(missilesCount)
+				fmt.Printf("Added %d missiles to %s launcher\n", missilesCount, launcherType)
+				break
+			}
+
+			break
+		} else {
+			cleanScreen()
+			fmt.Println("Please select again")
+			printMissilesLaunchers()
+		}
+	}
 
 }
 
@@ -65,7 +102,10 @@ var menu map[menuOption]menuItem = map[menuOption]menuItem{
 }
 
 func printMenu() {
+	fmt.Println("Menu:")
 	for i := 1; i <= len(menu); i++ {
 		fmt.Printf("%d. %s\n", i, menu[menuOption(i)].name)
 	}
+
+	fmt.Println()
 }

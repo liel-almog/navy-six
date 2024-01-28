@@ -132,4 +132,6 @@ func printMissilesLaunchers() {
 	for i := 0; i < len(launcherTypes); i++ {
 		fmt.Printf("%d. %s\n", i+1, launcherTypes[i])
 	}
+
+	fmt.Println()
 }

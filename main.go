@@ -26,6 +26,7 @@ func readIntFromConsole(reader *bufio.Reader) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	fmt.Println()
 
 	return number, nil
 }
@@ -39,10 +40,12 @@ func main() {
 	initLaunchers()
 
 	for {
-		fmt.Println("Enter your choice: ")
+		fmt.Print("Enter your choice: ")
 		choice, _ := readIntFromConsole(reader)
 
 		if item, ok := menu[menuOption(choice)]; ok {
+			cleanScreen()
+			fmt.Printf("You selected: %s\n", item.name)
 			item.action()
 		} else {
 			cleanScreen()
