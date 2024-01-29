@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type menuOption int
@@ -48,20 +50,27 @@ func storeNewMissiles() {
 }
 
 func launchAllMissiles() {
-	var sl map[launcher]int = make(map[launcher]int)
+	sl := make(map[launcher]int)
+	var total int
 
 	for lt, ml := range launchers {
 		s := ml.launch(ml.len())
 		sl[lt] = s
-	}
-
-	var total int
-	for lt, s := range sl {
-		fmt.Printf("Launched %d missiles from %s launcher\n", s, lt)
 		total += s
 	}
 
-	fmt.Println("Launched all missiles")
+	t := table.NewWriter()
+
+	t.SetAutoIndex(true)
+	t.AppendHeader(table.Row{"Launcher Type", "Successful Launches"})
+	t.AppendFooter(table.Row{"Total", total})
+
+	for lt, s := range sl {
+		t.AppendRow(table.Row{lt.String(), s})
+	}
+
+	t.SetCaption("Missile Total War Launch Report")
+	fmt.Println(t.Render())
 }
 
 func launchMissile() {
