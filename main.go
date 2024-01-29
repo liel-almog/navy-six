@@ -51,12 +51,12 @@ func random(min int, max int) int {
 
 func main() {
 	r := bufio.NewReader(os.Stdin)
-	cleanScreen()
-
-	printMenu()
 	initLaunchers()
 
 	for {
+		cleanScreen()
+		printMenu()
+
 		fmt.Print("Enter your choice: ")
 		choice, _ := readIntFromConsole(r)
 
@@ -64,6 +64,11 @@ func main() {
 			cleanScreen()
 			fmt.Printf("You selected: %s\n", item.name)
 			item.action()
+
+			// Wait for user to press enter
+			fmt.Print("Press 'Enter' to continue...")
+			bufio.NewReader(os.Stdin).ReadBytes('\n')
+
 		} else {
 			cleanScreen()
 			fmt.Println("Invalid choice")
