@@ -4,6 +4,9 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
+
+	"github.com/jedib0t/go-pretty/v6/table"
 )
 
 type menuOption int
@@ -22,47 +25,111 @@ type menuItem struct {
 }
 
 func storeNewMissiles() {
-	reader := bufio.NewReader(os.Stdin)
+	r := bufio.NewReader(os.Stdin)
 
-	printMissilesLaunchers()
+	launcherType, missileLauncher := selectMissleLauncher()
 	for {
-		fmt.Print("To which launcher you want to add missiles: ")
-		number, _ := readIntFromConsole(reader)
-		launcherType := launcher(number)
+		fmt.Println("How many missiles you want to add to", launcherType, "Launcher")
+		fmt.Print("Enter number of missiles: ")
+		missilesCount, err := readIntFromConsole(r)
 
-		if _, ok := launchers[launcherType]; ok {
-			for {
-				fmt.Println("How many missiles you want to add to", launcherType, "Launcher")
-				fmt.Print("Enter number of missiles: ")
-				missilesCount, err := readIntFromConsole(reader)
-
-				if err != nil {
-					fmt.Println("Invalid input, please try again")
-					continue
-				}
-
-				if missilesCount < 0 {
-					fmt.Println("Please enter a positive number")
-					continue
-				}
-
-				launchers[launcherType].addMissiles(missilesCount)
-				fmt.Printf("Added %d missiles to %s launcher\n", missilesCount, launcherType)
-				break
-			}
-
-			break
-		} else {
-			cleanScreen()
-			fmt.Println("Please select again")
-			printMissilesLaunchers()
+		if err != nil {
+			fmt.Println("Invalid input, please try again")
+			continue
 		}
+
+		if missilesCount < 0 {
+			fmt.Println("Please enter a positive number")
+			continue
+		}
+
+		missileLauncher.add(missilesCount)
+		fmt.Printf("Added %d missiles to %s launcher\n", missilesCount, launcherType)
+		break
+	}
+}
+
+func launchAllMissiles() {
+	sl := make(map[launcher]int)
+	var total int
+
+	for lt, ml := range launchers {
+		s := ml.launch(ml.len())
+		sl[lt] = s
+		total += s
 	}
 
+	t := table.NewWriter()
+
+	t.SetAutoIndex(true)
+	t.AppendHeader(table.Row{"Launcher Type", "Successful Launches"})
+	t.AppendFooter(table.Row{"Total", total})
+
+	for lt, s := range sl {
+		t.AppendRow(table.Row{lt.String(), s})
+	}
+
+	t.SetCaption("Missile Total War Launch Report")
+	fmt.Println(t.Render())
 }
 
 func launchMissile() {
-	fmt.Println("Launch missile")
+	const totalWar = "TotalWar"
+	var launcherType launcher
+	var mLauncher missileLauncher
+
+	r := bufio.NewReader(os.Stdin)
+
+	for {
+		cleanScreen()
+		fmt.Println("Please select a launcher:")
+		printMissilesLaunchers()
+		fmt.Print("Selected launcher: ")
+
+		input, _ := r.ReadString('\n')
+		input = strings.TrimSpace(input)
+
+		if input == totalWar {
+			launchAllMissiles()
+			return
+		}
+
+		number, err := convertStringToInt(input)
+		if err != nil {
+			fmt.Println("Invalid input, please try again")
+			continue
+		}
+
+		if isLauncher(number) {
+			launcherType = launcher(number)
+			mLauncher = launchers[launcherType]
+			break
+		}
+	}
+
+	for {
+		fmt.Println("How many missiles you want to launch from", launcherType, "Launcher")
+		fmt.Print("Enter number of missiles: ")
+		missilesCount, err := readIntFromConsole(r)
+
+		if err != nil {
+			fmt.Println("Invalid input, please try again")
+			continue
+		}
+
+		if missilesCount < 0 {
+			fmt.Println("Please enter a positive number")
+			continue
+		}
+
+		if missilesCount > mLauncher.len() {
+			mLauncher.add(missilesCount)
+		}
+
+		successfulLaunches := mLauncher.launch(missilesCount)
+		fmt.Printf("Launched %d missiles successfully from %s launcher\n", successfulLaunches, launcherType)
+		break
+	}
 }
 
 func inventoryReport() {
