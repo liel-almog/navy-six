@@ -146,47 +146,6 @@ func (c *cruiseMissileLauncher) launch(count int) int {
 	return successCount
 }
 
-type hypersonicMissileLauncher struct {
-	*missileStorage
-	maxRange int
-}
-
-func (h *hypersonicMissileLauncher) launch(count int) int {
-	r := bufio.NewReader(os.Stdin)
-	successCount := 0
-
-	var distance int
-
-	for {
-		fmt.Print("How far would you like to launch: ")
-		distance, _ = readIntFromConsole(r)
-
-		if distance > h.maxRange {
-			fmt.Println("This is too far, the maximum range is", h.maxRange)
-		} else {
-			break
-		}
-	}
-
-	successRate := (1.0 - (float64(distance) / float64(h.maxRange))) * 100.0
-	for i := 0; i < count; i++ {
-		m := h.missiles[i]
-
-		if m.failed {
-			continue
-		}
-
-		missileHitRate := random(0, 100)
-		if missileHitRate < int(successRate) {
-			successCount++
-		} else {
-			m.failed = false
-		}
-	}
-
-	return successCount
-}
-
 var launchers = map[launcher]missileLauncher{
 	torpedoLauncher: &torpedoMissileLauncher{
 		missileStorage: newMissileStorage(),
@@ -199,10 +158,6 @@ var launchers = map[launcher]missileLauncher{
 	cruiseLauncher: &cruiseMissileLauncher{
 		missileStorage: newMissileStorage(),
 		successRate:    20,
-	},
-	hypersonicLauncher: &hypersonicMissileLauncher{
-		missileStorage: newMissileStorage(),
-		maxRange:       1500,
 	},
 }
 
