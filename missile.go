@@ -152,14 +152,14 @@ type hypersonicMissileLauncher struct {
 }
 
 func (h *hypersonicMissileLauncher) launch(count int) int {
-	reader := bufio.NewReader(os.Stdin)
+	r := bufio.NewReader(os.Stdin)
 	successCount := 0
 
 	var distance int
 
 	for {
 		fmt.Print("How far would you like to launch: ")
-		distance, _ = readIntFromConsole(reader)
+		distance, _ = readIntFromConsole(r)
 
 		if distance > h.maxRange {
 			fmt.Println("This is too far, the maximum range is", h.maxRange)
@@ -230,20 +230,27 @@ func printMissilesLaunchers() {
 }
 
 func selectMissleLauncher() (launcher, missileLauncher) {
-	reader := bufio.NewReader(os.Stdin)
+	r := bufio.NewReader(os.Stdin)
+
 	for {
 		cleanScreen()
 		fmt.Println("Please select a launcher:")
 		printMissilesLaunchers()
 		fmt.Print("Selected launcher: ")
 
-		number, _ := readIntFromConsole(reader)
-		launcherType := launcher(number)
+		number, _ := readIntFromConsole(r)
 
-		if _, ok := launchers[launcherType]; !ok {
+		if !isLauncher(number) {
+			fmt.Println("Invalid input, please try again")
 			continue
 		}
 
+		launcherType := launcher(number)
 		return launcherType, launchers[launcherType]
 	}
+}
+
+func isLauncher(l int) bool {
+	_, ok := launchers[launcher(l)]
+	return ok
 }
