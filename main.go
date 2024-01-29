@@ -1,31 +1,77 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"math/rand"
+	"os"
+	"strconv"
+	"strings"
 )
 
-func printMenu() {
-	fmt.Println("Please select an option:")
+func cleanScreen() {
+	fmt.Print("\033[H\033[2J")
+}
 
-	for i := 1; i <= len(menu); i++ {
-		fmt.Printf("%d. %s\n", i, menu[i].name)
+func convertStringToInt(s string) (int, error) {
+	s = strings.TrimSpace(s)
+
+	// Parse the string into an integer
+	number, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
 	}
+	fmt.Println()
+
+	return number, nil
+}
+
+func readIntFromConsole(r *bufio.Reader) (int, error) {
+	input, err := r.ReadString('\n')
+	if err != nil {
+		return 0, err
+	}
+
+	// Trim the newline character from the input
+	input = strings.TrimSpace(input)
+
+	// Parse the string into an integer
+	number, err := strconv.Atoi(input)
+	if err != nil {
+		return 0, err
+	}
+	fmt.Println()
+
+	return number, nil
+}
+
+func random(min int, max int) int {
+	return rand.Intn(max-min) + min
 }
 
 func main() {
-	initMenu()
-	printMenu()
+	r := bufio.NewReader(os.Stdin)
+	initLaunchers()
 
 	for {
-		var choice int
+		cleanScreen()
+		printMenu()
 
-		fmt.Scanln(&choice)
+		fmt.Print("Enter your choice: ")
+		choice, _ := readIntFromConsole(r)
 
-		if item, exists := menu[choice]; exists {
+		if item, ok := menu[menuOption(choice)]; ok {
+			cleanScreen()
+			fmt.Printf("You selected: %s\n", item.name)
 			item.action()
+
+			// Wait for user to press enter
+			fmt.Print("Press 'Enter' to continue...")
+			bufio.NewReader(os.Stdin).ReadBytes('\n')
+
 		} else {
-			// Clear the screen
-			fmt.Print("\033[H\033[2J")
+			cleanScreen()
+			fmt.Println("Invalid choice")
 			printMenu()
 		}
 	}
