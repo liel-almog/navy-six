@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type menuOption int
@@ -22,13 +23,13 @@ type menuItem struct {
 }
 
 func storeNewMissiles() {
-	reader := bufio.NewReader(os.Stdin)
+	r := bufio.NewReader(os.Stdin)
 
 	launcherType, missileLauncher := selectMissleLauncher()
 	for {
 		fmt.Println("How many missiles you want to add to", launcherType, "Launcher")
 		fmt.Print("Enter number of missiles: ")
-		missilesCount, err := readIntFromConsole(reader)
+		missilesCount, err := readIntFromConsole(r)
 
 		if err != nil {
 			fmt.Println("Invalid input, please try again")
@@ -46,14 +47,61 @@ func storeNewMissiles() {
 	}
 }
 
+func launchAllMissiles() {
+	var sl map[launcher]int = make(map[launcher]int)
+
+	for lt, ml := range launchers {
+		s := ml.launch(ml.len())
+		sl[lt] = s
+	}
+
+	var total int
+	for lt, s := range sl {
+		fmt.Printf("Launched %d missiles from %s launcher\n", s, lt)
+		total += s
+	}
+
+	fmt.Println("Launched all missiles")
+}
+
 func launchMissile() {
-	reader := bufio.NewReader(os.Stdin)
-	launcherType, missleLauncher := selectMissleLauncher()
+	const totalWar = "TotalWar"
+	var launcherType launcher
+	var mLauncher missileLauncher
+
+	r := bufio.NewReader(os.Stdin)
+
+	for {
+		cleanScreen()
+		fmt.Println("Please select a launcher:")
+		printMissilesLaunchers()
+		fmt.Print("Selected launcher: ")
+
+		input, _ := r.ReadString('\n')
+		input = strings.TrimSpace(input)
+
+		if input == totalWar {
+			launchAllMissiles()
+			return
+		}
+
+		number, err := convertStringToInt(input)
+		if err != nil {
+			fmt.Println("Invalid input, please try again")
+			continue
+		}
+
+		if isLauncher(number) {
+			launcherType = launcher(number)
+			mLauncher = launchers[launcherType]
+			break
+		}
+	}
 
 	for {
 		fmt.Println("How many missiles you want to launch from", launcherType, "Launcher")
 		fmt.Print("Enter number of missiles: ")
-		missilesCount, err := readIntFromConsole(reader)
+		missilesCount, err := readIntFromConsole(r)
 
 		if err != nil {
 			fmt.Println("Invalid input, please try again")
@@ -65,11 +113,11 @@ func launchMissile() {
 			continue
 		}
 
-		if missilesCount > missleLauncher.len() {
-			missleLauncher.add(missilesCount)
+		if missilesCount > mLauncher.len() {
+			mLauncher.add(missilesCount)
 		}
 
-		successfulLaunches := missleLauncher.launch(missilesCount)
+		successfulLaunches := mLauncher.launch(missilesCount)
 		fmt.Printf("Launched %d missiles successfully from %s launcher\n", successfulLaunches, launcherType)
 		break
 	}
