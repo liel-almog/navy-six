@@ -167,7 +167,7 @@ func initLaunchers() {
 	}
 }
 
-func printMissilesLaunchers() {
+func orderLaunchers() []launcher {
 	var launcherTypes []launcher
 
 	for key := range launchers {
@@ -177,8 +177,14 @@ func printMissilesLaunchers() {
 	// sort the launchers
 	slices.Sort(launcherTypes)
 
-	for i := 0; i < len(launcherTypes); i++ {
-		fmt.Printf("%d. %s\n", i+1, launcherTypes[i])
+	return launcherTypes
+}
+
+func printMissilesLaunchers() {
+	launchers := orderLaunchers()
+
+	for i := 0; i < len(launchers); i++ {
+		fmt.Printf("%d. %s\n", i+1, launchers[i])
 	}
 
 	fmt.Println()

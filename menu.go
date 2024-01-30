@@ -133,7 +133,24 @@ func launchMissile() {
 }
 
 func inventoryReport() {
-	fmt.Println("Inventory report")
+	launcherTypes := orderLaunchers()
+	var totalMissiles int
+
+	t := table.NewWriter()
+
+	t.SetAutoIndex(true)
+	t.AppendHeader(table.Row{"Launcher Type", "Missiles"})
+
+	for _, lt := range launcherTypes {
+		ml := launchers[lt]
+		totalMissiles += ml.len()
+		t.AppendRow(table.Row{lt.String(), ml.len()})
+	}
+
+	t.AppendFooter(table.Row{"Total", totalMissiles})
+	t.SetCaption("Missile Inventory Report")
+
+	fmt.Println(t.Render())
 }
 
 func cleanOutMissiles() {
