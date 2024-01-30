@@ -51,6 +51,7 @@ type missileLauncher interface {
 	launch(count int) int
 	add(count int)
 	clear()
+	clearAt(index int)
 	len() int
 }
 
@@ -67,6 +68,12 @@ func (m *missileStorage) add(count int) {
 		m.missiles = append(m.missiles, missile{
 			failed: false,
 		})
+	}
+}
+
+func (m *missileStorage) clearAt(index int) {
+	if index < len(m.missiles) && index >= 0 { // Check for valid index
+		m.missiles = append(m.missiles[:index], m.missiles[index+1:]...)
 	}
 }
 
