@@ -123,7 +123,7 @@ func launchMissile() {
 		}
 
 		if missilesCount > mLauncher.len() {
-			mLauncher.add(missilesCount)
+			mLauncher.add(missilesCount - mLauncher.len())
 		}
 
 		successfulLaunches := mLauncher.launch(missilesCount)
