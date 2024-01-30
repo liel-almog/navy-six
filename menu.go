@@ -123,7 +123,7 @@ func launchMissile() {
 		}
 
 		if missilesCount > mLauncher.len() {
-			mLauncher.add(missilesCount)
+			mLauncher.add(missilesCount - mLauncher.len())
 		}
 
 		successfulLaunches := mLauncher.launch(missilesCount)
@@ -133,11 +133,82 @@ func launchMissile() {
 }
 
 func inventoryReport() {
-	fmt.Println("Inventory report")
+	launcherTypes := orderLaunchers()
+	var totalMissiles int
+
+	t := table.NewWriter()
+
+	t.SetAutoIndex(true)
+	t.AppendHeader(table.Row{"Launcher Type", "Missiles"})
+
+	for _, lt := range launcherTypes {
+		ml := launchers[lt]
+		totalMissiles += ml.len()
+		t.AppendRow(table.Row{lt.String(), ml.len()})
+	}
+
+	t.AppendFooter(table.Row{"Total", totalMissiles})
+	t.SetCaption("Missile Inventory Report")
+
+	fmt.Println(t.Render())
 }
 
-func cleanOutMissiles() {
-	fmt.Println("Clean out missiles")
+func clearMissiles() {
+	const cleanAll = "All"
+	var totalMissiles int
+	r := bufio.NewReader(os.Stdin)
+
+	// Clean out missiles only if the input was not a number
+	for {
+
+		// cleanScreen()
+		// Write to the terminal instread of the user
+		fmt.Printf("To clean out all missiles, type '%s'\n", cleanAll)
+		fmt.Println("To clean out a missile at a specific index, type the index number")
+		fmt.Print("Enter your choice: ")
+		// Write to the teminal so the reader can read it
+
+		input, _ := r.ReadString('\n')
+		input = strings.TrimSpace(input)
+
+		if input == cleanAll {
+			for _, ml := range launchers {
+				ml.clear()
+			}
+
+			fmt.Println("All missiles cleaned out")
+			break
+		}
+
+		indexToRemove, err := convertStringToInt(input)
+		if err != nil {
+			fmt.Println("Invalid input, please try again")
+			continue
+		}
+
+		if indexToRemove < 0 {
+			fmt.Println("Please enter a positive number")
+			continue
+		}
+
+		if indexToRemove == 0 {
+			break
+		}
+
+		// Clean out missiles at a specific index
+		for _, ml := range launchers {
+			if indexToRemove < ml.len() {
+				ml.clearAt(indexToRemove)
+				fmt.Printf("Missile at index %d cleaned out\n", indexToRemove)
+				return
+			}
+
+			totalMissiles += ml.len()
+			indexToRemove -= ml.len()
+		}
+
+		fmt.Printf("Invalid index, we have a total of %d missiles. Please try again\n", totalMissiles)
+	}
 }
 
 func shutdown() {
@@ -160,7 +231,7 @@ var menu map[menuOption]menuItem = map[menuOption]menuItem{
 	},
 	menuCleanOutMissles: {
 		name:   "Clean out missiles",
-		action: cleanOutMissiles,
+		action: clearMissiles,
 	},
 	menuShutdown: {
 		name:   "Shutdown",
