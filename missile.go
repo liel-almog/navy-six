@@ -5,7 +5,22 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"sort"
 )
+
+func removeByIndexes(missiles []missile, indexes []int) []missile {
+	// Sort the indexes in descending order
+	sort.Sort(sort.Reverse(sort.IntSlice(indexes)))
+
+	// Remove the elements by index
+	for _, index := range indexes {
+		if index < len(missiles) && index >= 0 { // Check for valid index
+			missiles = append(missiles[:index], missiles[index+1:]...)
+		}
+	}
+
+	return missiles
+}
 
 type launcher int
 
@@ -75,7 +90,8 @@ type torpedoMissileLauncher struct {
 }
 
 func (t *torpedoMissileLauncher) launch(count int) int {
-	successCount := 0
+	launched := 0
+	launchedIndexes := make([]int, 0)
 
 	for i := 0; i < count; i++ {
 		m := t.missiles[i]
@@ -86,13 +102,15 @@ func (t *torpedoMissileLauncher) launch(count int) int {
 
 		missileHitRate := random(0, 100)
 		if missileHitRate < t.successRate {
-			successCount++
+			launched++
+			launchedIndexes = append(launchedIndexes, i)
 		} else {
 			m.failed = true
 		}
 	}
 
-	return successCount
+	t.missiles = removeByIndexes(t.missiles, launchedIndexes)
+	return launched
 }
 
 type ballisticMissileLauncher struct {
@@ -101,7 +119,8 @@ type ballisticMissileLauncher struct {
 }
 
 func (b *ballisticMissileLauncher) launch(count int) int {
-	successCount := 0
+	launched := 0
+	launchedIndexes := make([]int, 0)
 
 	for i := 0; i < count; i++ {
 		m := b.missiles[i]
@@ -111,13 +130,16 @@ func (b *ballisticMissileLauncher) launch(count int) int {
 
 		missileHitRate := random(0, 100)
 		if missileHitRate < b.successRate {
-			successCount++
+			launched++
+			launchedIndexes = append(launchedIndexes, i)
 		} else {
 			m.failed = true
 		}
 	}
 
-	return successCount
+	b.missiles = removeByIndexes(b.missiles, launchedIndexes)
+
+	return launched
 }
 
 type cruiseMissileLauncher struct {
@@ -126,7 +148,8 @@ type cruiseMissileLauncher struct {
 }
 
 func (c *cruiseMissileLauncher) launch(count int) int {
-	successCount := 0
+	launched := 0
+	launchedIndexes := make([]int, 0)
 
 	for i := 0; i < count; i++ {
 		m := c.missiles[i]
@@ -137,13 +160,15 @@ func (c *cruiseMissileLauncher) launch(count int) int {
 
 		missileHitRate := random(0, 100)
 		if missileHitRate < c.successRate {
-			successCount++
+			launched++
+			launchedIndexes = append(launchedIndexes, i)
 		} else {
 			m.failed = true
 		}
 	}
 
-	return successCount
+	c.missiles = removeByIndexes(c.missiles, launchedIndexes)
+	return launched
 }
 
 var launchers = map[launcher]missileLauncher{
