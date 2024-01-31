@@ -1,6 +1,7 @@
 package missiles
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -154,6 +155,45 @@ func (c *cruiseMissileLauncher) Launch(count int) int {
 	return launched
 }
 
+type hypersonicMissileLauncher struct {
+	*missileStorage
+	maxRange int
+}
+
+func (h *hypersonicMissileLauncher) Launch(count int) int {
+	successCount := 0
+
+	distance := random(0, h.maxRange)
+
+	for {
+		fmt.Print("How far would you like to launch: ")
+
+		if distance > h.maxRange {
+			fmt.Println("This is too far, the maximum range is", h.maxRange)
+		} else {
+			break
+		}
+	}
+
+	successRate := (1.0 - (float64(distance) / float64(h.maxRange))) * 100.0
+	for i := 0; i < count; i++ {
+		m := h.missiles[i]
+
+		if m.failed {
+			continue
+		}
+
+		missileHitRate := random(0, 100)
+		if missileHitRate < int(successRate) {
+			successCount++
+		} else {
+			m.failed = false
+		}
+	}
+
+	return successCount
+}
+
 var Launchers = map[Launcher]MissileLauncher{
 	torpedoLauncher: &torpedoMissileLauncher{
 		missileStorage: newMissileStorage(),
@@ -166,6 +206,10 @@ var Launchers = map[Launcher]MissileLauncher{
 	cruiseLauncher: &cruiseMissileLauncher{
 		missileStorage: newMissileStorage(),
 		successRate:    20,
+	},
+	hypersonicLauncher: &hypersonicMissileLauncher{
+		missileStorage: newMissileStorage(),
+		maxRange:       1500,
 	},
 }
 
