@@ -1,4 +1,4 @@
-package main
+package menu
 
 import (
 	"bufio"
@@ -7,22 +7,8 @@ import (
 	"strings"
 
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/lielalmog/navy-six/missiles"
 )
-
-type menuOption int
-
-const (
-	menuStoreNewMissles menuOption = iota + 1
-	menuLaunchMissle
-	menuInventoryReport
-	menuCleanOutMissles
-	menuShutdown
-)
-
-type menuItem struct {
-	name   string
-	action func()
-}
 
 func storeNewMissiles() {
 	r := bufio.NewReader(os.Stdin)
@@ -43,18 +29,18 @@ func storeNewMissiles() {
 			continue
 		}
 
-		missileLauncher.add(missilesCount)
+		missileLauncher.Add(missilesCount)
 		fmt.Printf("Added %d missiles to %s launcher\n", missilesCount, launcherType)
 		break
 	}
 }
 
 func launchAllMissiles() {
-	sl := make(map[launcher]int)
+	sl := make(map[missiles.Launcher]int)
 	var total int
 
-	for lt, ml := range launchers {
-		s := ml.launch(ml.len())
+	for lt, ml := range missiles.Launchers {
+		s := ml.Launch(ml.Len())
 		sl[lt] = s
 		total += s
 	}
@@ -75,8 +61,8 @@ func launchAllMissiles() {
 
 func launchMissile() {
 	const totalWar = "TotalWar"
-	var launcherType launcher
-	var mLauncher missileLauncher
+	var launcherType missiles.Launcher
+	var mLauncher missiles.MissileLauncher
 
 	r := bufio.NewReader(os.Stdin)
 
@@ -100,9 +86,9 @@ func launchMissile() {
 			continue
 		}
 
-		if isLauncher(number) {
-			launcherType = launcher(number)
-			mLauncher = launchers[launcherType]
+		if missiles.IsLauncher(number) {
+			launcherType = missiles.Launcher(number)
+			mLauncher = missiles.Launchers[launcherType]
 			break
 		}
 	}
@@ -122,18 +108,18 @@ func launchMissile() {
 			continue
 		}
 
-		if missilesCount > mLauncher.len() {
-			mLauncher.add(missilesCount - mLauncher.len())
+		if missilesCount > mLauncher.Len() {
+			mLauncher.Add(missilesCount - mLauncher.Len())
 		}
 
-		successfulLaunches := mLauncher.launch(missilesCount)
+		successfulLaunches := mLauncher.Launch(missilesCount)
 		fmt.Printf("Launched %d missiles successfully from %s launcher\n", successfulLaunches, launcherType)
 		break
 	}
 }
 
 func inventoryReport() {
-	launcherTypes := orderLaunchers()
+	launcherTypes := missiles.OrderedLaunchers()
 	var totalMissiles int
 
 	t := table.NewWriter()
@@ -142,9 +128,9 @@ func inventoryReport() {
 	t.AppendHeader(table.Row{"Launcher Type", "Missiles"})
 
 	for _, lt := range launcherTypes {
-		ml := launchers[lt]
-		totalMissiles += ml.len()
-		t.AppendRow(table.Row{lt.String(), ml.len()})
+		ml := missiles.Launchers[lt]
+		totalMissiles += ml.Len()
+		t.AppendRow(table.Row{lt.String(), ml.Len()})
 	}
 
 	t.AppendFooter(table.Row{"Total", totalMissiles})
@@ -172,8 +158,8 @@ func clearMissiles() {
 		input = strings.TrimSpace(input)
 
 		if input == cleanAll {
-			for _, ml := range launchers {
-				ml.clear()
+			for _, ml := range missiles.Launchers {
+				ml.Clear()
 			}
 
 			fmt.Println("All missiles cleaned out")
@@ -196,15 +182,15 @@ func clearMissiles() {
 		}
 
 		// Clean out missiles at a specific index
-		for _, ml := range launchers {
-			if indexToRemove < ml.len() {
-				ml.clearAt(indexToRemove)
+		for _, ml := range missiles.Launchers {
+			if indexToRemove < ml.Len() {
+				ml.ClearAt(indexToRemove)
 				fmt.Printf("Missile at index %d cleaned out\n", indexToRemove)
 				return
 			}
 
-			totalMissiles += ml.len()
-			indexToRemove -= ml.len()
+			totalMissiles += ml.Len()
+			indexToRemove -= ml.Len()
 		}
 
 		fmt.Printf("Invalid index, we have a total of %d missiles. Please try again\n", totalMissiles)
@@ -214,36 +200,4 @@ func clearMissiles() {
 func shutdown() {
 	fmt.Println("GG WP, exiting.....")
 	os.Exit(0)
-}
-
-var menu map[menuOption]menuItem = map[menuOption]menuItem{
-	menuStoreNewMissles: {
-		name:   "Store new missiles",
-		action: storeNewMissiles,
-	},
-	menuLaunchMissle: {
-		name:   "Launch missile",
-		action: launchMissile,
-	},
-	menuInventoryReport: {
-		name:   "Inventory report",
-		action: inventoryReport,
-	},
-	menuCleanOutMissles: {
-		name:   "Clean out missiles",
-		action: clearMissiles,
-	},
-	menuShutdown: {
-		name:   "Shutdown",
-		action: shutdown,
-	},
-}
-
-func printMenu() {
-	fmt.Println("Menu:")
-	for i := 1; i <= len(menu); i++ {
-		fmt.Printf("%d. %s\n", i, menu[menuOption(i)].name)
-	}
-
-	fmt.Println()
 }

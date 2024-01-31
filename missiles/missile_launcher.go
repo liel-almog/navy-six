@@ -1,14 +1,16 @@
-package main
+package missiles
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"slices"
+	"math/rand"
 	"sort"
 )
 
-func removeByIndexes(missiles []missile, indexes []int) []missile {
+func random(min int, max int) int {
+	return rand.Intn(max-min) + min
+}
+
+func removeMissilesByIndexes(missiles []missile, indexes []int) []missile {
 	// Sort the indexes in descending order
 	sort.Sort(sort.Reverse(sort.IntSlice(indexes)))
 
@@ -22,37 +24,12 @@ func removeByIndexes(missiles []missile, indexes []int) []missile {
 	return missiles
 }
 
-type launcher int
-
-const (
-	torpedoLauncher launcher = iota + 1
-	ballisticLauncher
-	cruiseLauncher
-	hypersonicLauncher
-)
-
-func (l launcher) String() string {
-	switch l {
-	case torpedoLauncher:
-		return "Torpedo"
-	case ballisticLauncher:
-		return "Ballistic"
-	case cruiseLauncher:
-		return "Cruise"
-	case hypersonicLauncher:
-		return "Hypersonic"
-	default:
-		return "Unknown"
-	}
-}
-
-type missileLauncher interface {
-	// Launches the missiles and returns the number of missiles that successfully launched
-	launch(count int) int
-	add(count int)
-	clear()
-	clearAt(index int)
-	len() int
+type MissileLauncher interface {
+	Launch(count int) int
+	Add(count int)
+	Clear()
+	ClearAt(index int)
+	Len() int
 }
 
 type missile struct {
@@ -63,7 +40,7 @@ type missileStorage struct {
 	missiles []missile
 }
 
-func (m *missileStorage) add(count int) {
+func (m *missileStorage) Add(count int) {
 	for i := 0; i < count; i++ {
 		m.missiles = append(m.missiles, missile{
 			failed: false,
@@ -71,17 +48,17 @@ func (m *missileStorage) add(count int) {
 	}
 }
 
-func (m *missileStorage) clearAt(index int) {
+func (m *missileStorage) ClearAt(index int) {
 	if index < len(m.missiles) && index >= 0 { // Check for valid index
 		m.missiles = append(m.missiles[:index], m.missiles[index+1:]...)
 	}
 }
 
-func (m *missileStorage) clear() {
+func (m *missileStorage) Clear() {
 	m.missiles = []missile{}
 }
 
-func (m *missileStorage) len() int {
+func (m *missileStorage) Len() int {
 	return len(m.missiles)
 }
 
@@ -96,7 +73,7 @@ type torpedoMissileLauncher struct {
 	successRate int
 }
 
-func (t *torpedoMissileLauncher) launch(count int) int {
+func (t *torpedoMissileLauncher) Launch(count int) int {
 	launched := 0
 	launchedIndexes := make([]int, 0)
 
@@ -116,7 +93,7 @@ func (t *torpedoMissileLauncher) launch(count int) int {
 		}
 	}
 
-	t.missiles = removeByIndexes(t.missiles, launchedIndexes)
+	t.missiles = removeMissilesByIndexes(t.missiles, launchedIndexes)
 	return launched
 }
 
@@ -125,7 +102,7 @@ type ballisticMissileLauncher struct {
 	successRate int
 }
 
-func (b *ballisticMissileLauncher) launch(count int) int {
+func (b *ballisticMissileLauncher) Launch(count int) int {
 	launched := 0
 	launchedIndexes := make([]int, 0)
 
@@ -144,7 +121,7 @@ func (b *ballisticMissileLauncher) launch(count int) int {
 		}
 	}
 
-	b.missiles = removeByIndexes(b.missiles, launchedIndexes)
+	b.missiles = removeMissilesByIndexes(b.missiles, launchedIndexes)
 
 	return launched
 }
@@ -154,7 +131,7 @@ type cruiseMissileLauncher struct {
 	successRate int
 }
 
-func (c *cruiseMissileLauncher) launch(count int) int {
+func (c *cruiseMissileLauncher) Launch(count int) int {
 	launched := 0
 	launchedIndexes := make([]int, 0)
 
@@ -174,11 +151,50 @@ func (c *cruiseMissileLauncher) launch(count int) int {
 		}
 	}
 
-	c.missiles = removeByIndexes(c.missiles, launchedIndexes)
+	c.missiles = removeMissilesByIndexes(c.missiles, launchedIndexes)
 	return launched
 }
 
-var launchers = map[launcher]missileLauncher{
+type hypersonicMissileLauncher struct {
+	*missileStorage
+	maxRange int
+}
+
+func (h *hypersonicMissileLauncher) Launch(count int) int {
+	successCount := 0
+
+	distance := random(0, h.maxRange)
+
+	for {
+		fmt.Print("How far would you like to launch: ")
+
+		if distance > h.maxRange {
+			fmt.Println("This is too far, the maximum range is", h.maxRange)
+		} else {
+			break
+		}
+	}
+
+	successRate := (1.0 - (float64(distance) / float64(h.maxRange))) * 100.0
+	for i := 0; i < count; i++ {
+		m := h.missiles[i]
+
+		if m.failed {
+			continue
+		}
+
+		missileHitRate := random(0, 100)
+		if missileHitRate < int(successRate) {
+			successCount++
+		} else {
+			m.failed = false
+		}
+	}
+
+	return successCount
+}
+
+var Launchers = map[Launcher]MissileLauncher{
 	torpedoLauncher: &torpedoMissileLauncher{
 		missileStorage: newMissileStorage(),
 		successRate:    100,
@@ -191,59 +207,14 @@ var launchers = map[launcher]missileLauncher{
 		missileStorage: newMissileStorage(),
 		successRate:    20,
 	},
+	hypersonicLauncher: &hypersonicMissileLauncher{
+		missileStorage: newMissileStorage(),
+		maxRange:       1500,
+	},
 }
 
-func initLaunchers() {
-	for _, l := range launchers {
-		l.add(10)
+func InitLaunchers() {
+	for _, l := range Launchers {
+		l.Add(10)
 	}
-}
-
-func orderLaunchers() []launcher {
-	var launcherTypes []launcher
-
-	for key := range launchers {
-		launcherTypes = append(launcherTypes, key)
-	}
-
-	// sort the launchers
-	slices.Sort(launcherTypes)
-
-	return launcherTypes
-}
-
-func printMissilesLaunchers() {
-	launchers := orderLaunchers()
-
-	for i := 0; i < len(launchers); i++ {
-		fmt.Printf("%d. %s\n", i+1, launchers[i])
-	}
-
-	fmt.Println()
-}
-
-func selectMissleLauncher() (launcher, missileLauncher) {
-	r := bufio.NewReader(os.Stdin)
-
-	for {
-		cleanScreen()
-		fmt.Println("Please select a launcher:")
-		printMissilesLaunchers()
-		fmt.Print("Selected launcher: ")
-
-		number, _ := readIntFromConsole(r)
-
-		if !isLauncher(number) {
-			fmt.Println("Invalid input, please try again")
-			continue
-		}
-
-		launcherType := launcher(number)
-		return launcherType, launchers[launcherType]
-	}
-}
-
-func isLauncher(l int) bool {
-	_, ok := launchers[launcher(l)]
-	return ok
 }
