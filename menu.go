@@ -1,249 +1,277 @@
 package main
 
-import (
-	"bufio"
-	"fmt"
-	"os"
-	"strings"
+// package main
 
-	"github.com/jedib0t/go-pretty/v6/table"
-)
+// import (
+// 	"bufio"
+// 	"fmt"
+// 	"os"
+// 	"strconv"
+// 	"strings"
 
-type menuOption int
+// 	"github.com/jedib0t/go-pretty/v6/table"
+// )
 
-const (
-	menuStoreNewMissles menuOption = iota + 1
-	menuLaunchMissle
-	menuInventoryReport
-	menuCleanOutMissles
-	menuShutdown
-)
+// func storeNewMissiles() {
+// 	r := bufio.NewReader(os.Stdin)
 
-type menuItem struct {
-	name   string
-	action func()
-}
+// 	launcherType, missileLauncher := selectMissleLauncher()
+// 	for {
+// 		fmt.Println("How many missiles you want to add to", launcherType, "Launcher")
+// 		fmt.Print("Enter number of missiles: ")
+// 		missilesCount, err := readIntFromConsole(r)
 
-func storeNewMissiles() {
-	r := bufio.NewReader(os.Stdin)
+// 		if err != nil {
+// 			fmt.Println("Invalid input, please try again")
+// 			continue
+// 		}
 
-	launcherType, missileLauncher := selectMissleLauncher()
-	for {
-		fmt.Println("How many missiles you want to add to", launcherType, "Launcher")
-		fmt.Print("Enter number of missiles: ")
-		missilesCount, err := readIntFromConsole(r)
+// 		if missilesCount < 0 {
+// 			fmt.Println("Please enter a positive number")
+// 			continue
+// 		}
 
-		if err != nil {
-			fmt.Println("Invalid input, please try again")
-			continue
-		}
+// 		missileLauncher.add(missilesCount)
+// 		fmt.Printf("Added %d missiles to %s launcher\n", missilesCount, launcherType)
+// 		break
+// 	}
+// }
 
-		if missilesCount < 0 {
-			fmt.Println("Please enter a positive number")
-			continue
-		}
+// func launchAllMissiles() {
+// 	sl := make(map[launcher]int)
+// 	var total int
 
-		missileLauncher.add(missilesCount)
-		fmt.Printf("Added %d missiles to %s launcher\n", missilesCount, launcherType)
-		break
-	}
-}
+// 	for lt, ml := range launchers {
+// 		s := ml.launch(ml.len())
+// 		sl[lt] = s
+// 		total += s
+// 	}
 
-func launchAllMissiles() {
-	sl := make(map[launcher]int)
-	var total int
+// 	t := table.NewWriter()
 
-	for lt, ml := range launchers {
-		s := ml.launch(ml.len())
-		sl[lt] = s
-		total += s
-	}
+// 	t.SetAutoIndex(true)
+// 	t.AppendHeader(table.Row{"Launcher Type", "Successful Launches"})
+// 	t.AppendFooter(table.Row{"Total", total})
 
-	t := table.NewWriter()
+// 	for lt, s := range sl {
+// 		t.AppendRow(table.Row{lt.String(), s})
+// 	}
 
-	t.SetAutoIndex(true)
-	t.AppendHeader(table.Row{"Launcher Type", "Successful Launches"})
-	t.AppendFooter(table.Row{"Total", total})
+// 	t.SetCaption("Missile Total War Launch Report")
+// 	fmt.Println(t.Render())
+// }
 
-	for lt, s := range sl {
-		t.AppendRow(table.Row{lt.String(), s})
-	}
+// func launchMissile() {
+// 	const totalWar = "TotalWar"
+// 	var launcherType launcher
+// 	var mLauncher missileLauncher
 
-	t.SetCaption("Missile Total War Launch Report")
-	fmt.Println(t.Render())
-}
+// 	r := bufio.NewReader(os.Stdin)
 
-func launchMissile() {
-	const totalWar = "TotalWar"
-	var launcherType launcher
-	var mLauncher missileLauncher
+// 	for {
+// 		cleanScreen()
+// 		fmt.Println("Please select a launcher:")
+// 		printMissilesLaunchers()
+// 		fmt.Print("Selected launcher: ")
 
-	r := bufio.NewReader(os.Stdin)
+// 		input, _ := r.ReadString('\n')
+// 		input = strings.TrimSpace(input)
 
-	for {
-		cleanScreen()
-		fmt.Println("Please select a launcher:")
-		printMissilesLaunchers()
-		fmt.Print("Selected launcher: ")
+// 		if input == totalWar {
+// 			launchAllMissiles()
+// 			return
+// 		}
 
-		input, _ := r.ReadString('\n')
-		input = strings.TrimSpace(input)
+// 		number, err := convertStringToInt(input)
+// 		if err != nil {
+// 			fmt.Println("Invalid input, please try again")
+// 			continue
+// 		}
 
-		if input == totalWar {
-			launchAllMissiles()
-			return
-		}
+// 		if isLauncher(number) {
+// 			launcherType = launcher(number)
+// 			mLauncher = launchers[launcherType]
+// 			break
+// 		}
+// 	}
 
-		number, err := convertStringToInt(input)
-		if err != nil {
-			fmt.Println("Invalid input, please try again")
-			continue
-		}
+// 	for {
+// 		fmt.Println("How many missiles you want to launch from", launcherType, "Launcher")
+// 		fmt.Print("Enter number of missiles: ")
+// 		missilesCount, err := readIntFromConsole(r)
 
-		if isLauncher(number) {
-			launcherType = launcher(number)
-			mLauncher = launchers[launcherType]
-			break
-		}
-	}
+// 		if err != nil {
+// 			fmt.Println("Invalid input, please try again")
+// 			continue
+// 		}
 
-	for {
-		fmt.Println("How many missiles you want to launch from", launcherType, "Launcher")
-		fmt.Print("Enter number of missiles: ")
-		missilesCount, err := readIntFromConsole(r)
+// 		if missilesCount < 0 {
+// 			fmt.Println("Please enter a positive number")
+// 			continue
+// 		}
 
-		if err != nil {
-			fmt.Println("Invalid input, please try again")
-			continue
-		}
+// 		if missilesCount > mLauncher.len() {
+// 			mLauncher.add(missilesCount - mLauncher.len())
+// 		}
 
-		if missilesCount < 0 {
-			fmt.Println("Please enter a positive number")
-			continue
-		}
+// 		successfulLaunches := mLauncher.launch(missilesCount)
+// 		fmt.Printf("Launched %d missiles successfully from %s launcher\n", successfulLaunches, launcherType)
+// 		break
+// 	}
+// }
 
-		if missilesCount > mLauncher.len() {
-			mLauncher.add(missilesCount - mLauncher.len())
-		}
+// func inventoryReport() {
+// 	launcherTypes := orderLaunchers()
+// 	var totalMissiles int
 
-		successfulLaunches := mLauncher.launch(missilesCount)
-		fmt.Printf("Launched %d missiles successfully from %s launcher\n", successfulLaunches, launcherType)
-		break
-	}
-}
+// 	t := table.NewWriter()
 
-func inventoryReport() {
-	launcherTypes := orderLaunchers()
-	var totalMissiles int
+// 	t.SetAutoIndex(true)
+// 	t.AppendHeader(table.Row{"Launcher Type", "Missiles"})
 
-	t := table.NewWriter()
+// 	for _, lt := range launcherTypes {
+// 		ml := launchers[lt]
+// 		totalMissiles += ml.len()
+// 		t.AppendRow(table.Row{lt.String(), ml.len()})
+// 	}
 
-	t.SetAutoIndex(true)
-	t.AppendHeader(table.Row{"Launcher Type", "Missiles"})
+// 	t.AppendFooter(table.Row{"Total", totalMissiles})
+// 	t.SetCaption("Missile Inventory Report")
 
-	for _, lt := range launcherTypes {
-		ml := launchers[lt]
-		totalMissiles += ml.len()
-		t.AppendRow(table.Row{lt.String(), ml.len()})
-	}
+// 	fmt.Println(t.Render())
+// }
 
-	t.AppendFooter(table.Row{"Total", totalMissiles})
-	t.SetCaption("Missile Inventory Report")
+// func clearMissiles() {
+// 	const cleanAll = "All"
+// 	var totalMissiles int
+// 	r := bufio.NewReader(os.Stdin)
 
-	fmt.Println(t.Render())
-}
+// 	// Clean out missiles only if the input was not a number
+// 	for {
 
-func clearMissiles() {
-	const cleanAll = "All"
-	var totalMissiles int
-	r := bufio.NewReader(os.Stdin)
+// 		// cleanScreen()
+// 		// Write to the terminal instread of the user
+// 		fmt.Printf("To clean out all missiles, type '%s'\n", cleanAll)
+// 		fmt.Println("To clean out a missile at a specific index, type the index number")
+// 		fmt.Print("Enter your choice: ")
+// 		// Write to the teminal so the reader can read it
 
-	// Clean out missiles only if the input was not a number
-	for {
+// 		input, _ := r.ReadString('\n')
+// 		input = strings.TrimSpace(input)
 
-		// cleanScreen()
-		// Write to the terminal instread of the user
-		fmt.Printf("To clean out all missiles, type '%s'\n", cleanAll)
-		fmt.Println("To clean out a missile at a specific index, type the index number")
-		fmt.Print("Enter your choice: ")
-		// Write to the teminal so the reader can read it
+// 		if input == cleanAll {
+// 			for _, ml := range launchers {
+// 				ml.clear()
+// 			}
 
-		input, _ := r.ReadString('\n')
-		input = strings.TrimSpace(input)
+// 			fmt.Println("All missiles cleaned out")
+// 			break
+// 		}
 
-		if input == cleanAll {
-			for _, ml := range launchers {
-				ml.clear()
-			}
+// 		indexToRemove, err := convertStringToInt(input)
+// 		if err != nil {
+// 			fmt.Println("Invalid input, please try again")
+// 			continue
+// 		}
 
-			fmt.Println("All missiles cleaned out")
-			break
-		}
+// 		if indexToRemove < 0 {
+// 			fmt.Println("Please enter a positive number")
+// 			continue
+// 		}
 
-		indexToRemove, err := convertStringToInt(input)
-		if err != nil {
-			fmt.Println("Invalid input, please try again")
-			continue
-		}
+// 		if indexToRemove == 0 {
+// 			break
+// 		}
 
-		if indexToRemove < 0 {
-			fmt.Println("Please enter a positive number")
-			continue
-		}
+// 		// Clean out missiles at a specific index
+// 		for _, ml := range launchers {
+// 			if indexToRemove < ml.len() {
+// 				ml.clearAt(indexToRemove)
+// 				fmt.Printf("Missile at index %d cleaned out\n", indexToRemove)
+// 				return
+// 			}
 
-		if indexToRemove == 0 {
-			break
-		}
+// 			totalMissiles += ml.len()
+// 			indexToRemove -= ml.len()
+// 		}
 
-		// Clean out missiles at a specific index
-		for _, ml := range launchers {
-			if indexToRemove < ml.len() {
-				ml.clearAt(indexToRemove)
-				fmt.Printf("Missile at index %d cleaned out\n", indexToRemove)
-				return
-			}
+// 		fmt.Printf("Invalid index, we have a total of %d missiles. Please try again\n", totalMissiles)
+// 	}
+// }
 
-			totalMissiles += ml.len()
-			indexToRemove -= ml.len()
-		}
+// func shutdown() {
+// 	fmt.Println("GG WP, exiting.....")
+// 	os.Exit(0)
+// }
 
-		fmt.Printf("Invalid index, we have a total of %d missiles. Please try again\n", totalMissiles)
-	}
-}
+// func printMenu() {
+// 	fmt.Println("Menu:")
+// 	for i := 1; i <= len(menu); i++ {
+// 		fmt.Printf("%d. %s\n", i, menu[menuOption(i)].name)
+// 	}
 
-func shutdown() {
-	fmt.Println("GG WP, exiting.....")
-	os.Exit(0)
-}
+// 	fmt.Println()
+// }
 
-var menu map[menuOption]menuItem = map[menuOption]menuItem{
-	menuStoreNewMissles: {
-		name:   "Store new missiles",
-		action: storeNewMissiles,
-	},
-	menuLaunchMissle: {
-		name:   "Launch missile",
-		action: launchMissile,
-	},
-	menuInventoryReport: {
-		name:   "Inventory report",
-		action: inventoryReport,
-	},
-	menuCleanOutMissles: {
-		name:   "Clean out missiles",
-		action: clearMissiles,
-	},
-	menuShutdown: {
-		name:   "Shutdown",
-		action: shutdown,
-	},
-}
+// func printMissilesLaunchers() {
+// 	launchers := orderLaunchers()
 
-func printMenu() {
-	fmt.Println("Menu:")
-	for i := 1; i <= len(menu); i++ {
-		fmt.Printf("%d. %s\n", i, menu[menuOption(i)].name)
-	}
+// 	for i := 0; i < len(launchers); i++ {
+// 		fmt.Printf("%d. %s\n", i+1, launchers[i])
+// 	}
 
-	fmt.Println()
-}
+// 	fmt.Println()
+// }
+
+// func selectMissleLauncher() (launcher, missileLauncher) {
+// 	r := bufio.NewReader(os.Stdin)
+
+// 	for {
+// 		cleanScreen()
+// 		fmt.Println("Please select a launcher:")
+// 		printMissilesLaunchers()
+// 		fmt.Print("Selected launcher: ")
+
+// 		number, _ := readIntFromConsole(r)
+
+// 		if !isLauncher(number) {
+// 			fmt.Println("Invalid input, please try again")
+// 			continue
+// 		}
+
+// 		launcherType := launcher(number)
+// 		return launcherType, launchers[launcherType]
+// 	}
+// }
+
+// func convertStringToInt(s string) (int, error) {
+// 	s = strings.TrimSpace(s)
+
+// 	// Parse the string into an integer
+// 	number, err := strconv.Atoi(s)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	fmt.Println()
+
+// 	return number, nil
+// }
+
+// func readIntFromConsole(r *bufio.Reader) (int, error) {
+// 	input, err := r.ReadString('\n')
+// 	if err != nil {
+// 		return 0, err
+// 	}
+
+// 	// Trim the newline character from the input
+// 	input = strings.TrimSpace(input)
+
+// 	// Parse the string into an integer
+// 	number, err := strconv.Atoi(input)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+// 	fmt.Println()
+
+// 	return number, nil
+// }
